@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <!-- Panel Izquierdo: Info Proyecto -->
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h3>{{ proyecto.nombre }}</h3>
+                <p class="text-muted">Cliente: {{ proyecto.cliente }}</p>
+                <hr>
+                <form action="{{ url_for('update_project_status', id=proyecto.id) }}" method="POST">
+                    <label class="form-label">Estado del Proyecto:</label>
+                    <select name="estado" class="form-select mb-2">
+                        <option value="activo" {% if proyecto.estado == 'activo' %}selected{% endif %}>Activo</option>
+                        <option value="pausado" {% if proyecto.estado == 'pausado' %}selected{% endif %}>Pausado</option>
+                        <option value="finalizado" {% if proyecto.estado == 'finalizado' %}selected{% endif %}>Finalizado</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Actualizar Estado</button>
+                </form>
+            </div>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary w-100">Volver</a>
+    </div>
+
+    <!-- Panel Derecho: Tareas -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Tareas</h5>
+                <span class="badge bg-secondary">{{ proyecto.tareas|length }}</span>
+            </div>
+            <div class="card-body bg-light">
+                <form action="{{ url_for('add_task', project_id=proyecto.id) }}" method="POST" class="row g-2 mb-4">
+                    <div class="col-md-5">
+                        <input type="text" name="titulo" class="form-control form-control-sm" placeholder="Nueva Tarea" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="responsable" class="form-control form-control-sm" placeholder="Responsable" required>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-success btn-sm w-100">Agregar</button>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tarea</th>
+                                <th>Responsable</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tarea in proyecto.tareas %}
+                            {% set task_style = '' %}
+                            {% if tarea.estado == 'hecha' %}
+                                {% set task_style = 'background-color: #d1e7dd;' %}
+                            {% elif tarea.estado == 'en_progreso' %}
+                                {% set task_style = 'background-color: #fff3cd;' %}
+                            {% endif %}
+                            <tr>
+                                <td>{{ tarea.titulo }}</td>
+                                <td>{{ tarea.responsable }}</td>
+                                <td>
+                                    <form action="{{ url_for('update_task_status', id=tarea.id) }}" method="POST">
+                                        <select name="estado" class="form-select form-select-sm" onchange="this.form.submit()"
+                                            style="{{ task_style }}">
+                                            <option value="pendiente" {% if tarea.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                            <option value="en_progreso" {% if tarea.estado == 'en_progreso' %}selected{% endif %}>En Progreso</option>
+                                            <option value="hecha" {% if tarea.estado == 'hecha' %}selected{% endif %}>Hecha</option>
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="3" class="text-center">No hay tareas registradas.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
